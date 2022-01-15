@@ -1,6 +1,6 @@
 <?php
 class BasedeDatosmysqli{
-	private $conexion;
+	public $conexion;
 	public $error;
 	
 	public function __construct($servidor,$usuario,$password,$base){

@@ -36,8 +36,9 @@ if (isset ($_SESSION["usuario"])) {
 	</div>
 </nav>
 </div>
+
 <div class="container">
-	
+
 	<h3>Iniciar sesión</h3><br /><br />
 	<div id="login">
 		<form method="post" action="validar.php">

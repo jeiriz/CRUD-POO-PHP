@@ -11,9 +11,12 @@ session_start();
 <body>
 <?php
 require ('autoload.php');
+include ('biblioteca_clases/clsFiltroSql.php');
 
 $base = new BasedeDatosmysqli(SERVIDOR,USUARIO,PASSWORD,BASE);
 $usuario = new Usuario($base);
+$filtro = new clsFiltroSql($base->conexion);
+$_POST = $filtro->filtrar($_POST);
 
 $usuarioOk = $usuario->validarUsuario($_POST['usuario'],$_POST['password']);
 
@@ -22,7 +25,7 @@ if (!$usuarioOk){
 	<script type="text/javascript">
 		alert('Usuario y/o password inexistentes');
 		window.location='index.php'
-	</script>	
+	</script>
 <?php
 }
 else{

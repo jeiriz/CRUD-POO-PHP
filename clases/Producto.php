@@ -26,7 +26,7 @@ class Producto {
 		}
 	}
 	
-	
+
 	public function getProductos(){
 		//echo $this->db->error; 
 		$respuesta = $this->db->enviarQuery("select * from productos");

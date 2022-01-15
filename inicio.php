@@ -6,7 +6,9 @@ if (!isset($_SESSION['usuario'])){
                 window.location="index.php"
             </script>';
 }
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,7 +35,6 @@ if (!isset($_SESSION['usuario'])){
 			<a href="./" class="navbar-brand">ABM Productos</a>
 			<a href="salir.php" class="navbar-brand">Cerrar Sesion</a>
 		</div>
-		
 	</div>
 </nav>
 
@@ -44,12 +45,38 @@ if (!isset($_SESSION['usuario'])){
 	require ('autoload.php');
 
 	
+	// $base = new BasedeDatosmysqli(SERVIDOR,USUARIO,PASSWORD,BASE);
+	// $producto = new Producto($base);
+	// Lo hice hardcodeado porque no tengo tanto tiempo libre, la idea es hacerlo con clases la proxima
+	require('biblioteca_clases/pagination_class.php');
 	$base = new BasedeDatosmysqli(SERVIDOR,USUARIO,PASSWORD,BASE);
 	$producto = new Producto($base);
 
-	$productoOK = $producto->getProductos();
+	$productos = $producto->getProductos();
+	$db = new mysqli("localhost", "root", "", "carrocompras");
+
+	$limit = 5;
+	$offset= !empty($_GET["page"]) ? ($_GET["page"] - 1) * $limit : 0;
+	//count records
+	$query = $db->query("SELECT COUNT(*) as numrows FROM productos");
+	$result = $query->fetch_array();
+	$rowCount = $result['numrows'];
+	 
+	$pagConfig = array(
+		'baseURL' => 'inicio.php',
+		'totalRows' => $rowCount,
+		'perPage' => $limit,
+	);
+
+	$pagination =  new Pagination($pagConfig);
+
+	if ($db->connect_errno) {
+		echo "Fallo al conectar a MySQL: (" . $db->connect_errno . ") " . $db->connect_error;
+	}
 	
-	if ($productoOK){
+	$qry = $db->query("SELECT * FROM productos LIMIT $offset, $limit");
+	
+	if ($qry->num_rows > 0){
 		echo '<table class="table table-striped">
 				<tr class="active">
 					<td>Código</td>
@@ -58,19 +85,19 @@ if (!isset($_SESSION['usuario'])){
 					<td>Precio</td>
 					<td colspan="3">Operaciones</td>
 				</tr>';
-		for ($i=0;$i<count($productoOK);$i++){
+		while ($row = $qry->fetch_assoc()) {
 			echo '<tr>
-					<td>'.$productoOK[$i]['codigo'].'</td>
-					<td>'.$productoOK[$i]['producto'].'</td>
-					<td>'.$productoOK[$i]['descripcion'].'</td>
-					<td>'.$productoOK[$i]['precio'].'</td>
-					<td><a href="agregarCarrito.php?codigo='.$productoOK[$i]['codigo'].'"><button type="button" class="btn btn-info">Agregar Carrito</button></a></td>
-					<td><a href="modificar.php?codigo='.$productoOK[$i]['codigo'].'"><button type="button" class="btn btn-info">Modificar</button></a></td>
-					<td><a href="eliminar.php?codigo='.$productoOK[$i]['codigo'].'" onclick="if(!confirm(\'Se borrará el producto seleccionado\'))return false"><button type="button" class="btn btn-info">Eliminar</button></a></td>
+					<td>'.$row['codigo'].'</td>
+					<td>'.$row['producto'].'</td>
+					<td>'.$row['descripcion'].'</td>
+					<td>'.$row['precio'].'</td>
+					<td><a href="modificar.php?codigo='.$row['codigo'].'"><button type="button" class="btn btn-warning">Modificar</button></a></td>
+					<td><a href="eliminar.php?codigo='.$row['codigo'].'"><button type="button" class="btn btn-danger">Eliminar</button></a></td>
+					<td><a href="carrito.php?codigo='.$row['codigo'].'"><button type="button" class="btn btn-success">Agregar al carrito</button></a></td>
 				</tr>';
-			
 		}
 		echo '</table>';
+		echo $pagination->createLinks();
 	}
 	else{
 		echo 'Aún no hay datos ingresados';
